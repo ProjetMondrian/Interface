@@ -6,6 +6,7 @@ import os
 import sys
 from PIL import Image,ImageTk
 import tkFileDialog
+import imghdr
 
 currentImage = 'firstPicture.jpg'
 
@@ -53,6 +54,12 @@ def close_window():
 
 def selectImage():
     path = tkFileDialog.askopenfilename()
+    imageType = imghdr.what(path)
+    if imageType == "png":
+        im = Image.open(path)
+        rgb_im = im.convert('RGB')
+        rgb_im.save('imageToPut.jpg')
+        path = "imageToPut.jpg"
     global currentImage
     currentImage = path
     putImage(path)
