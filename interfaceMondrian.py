@@ -8,6 +8,7 @@ from PIL import Image,ImageTk
 import tkFileDialog
 import imghdr
 
+# 100 8 10
 currentImage = 'firstPicture.jpg'
 
 def putImage(imageName):
@@ -40,11 +41,26 @@ def firstAlgorithm():
     syntax = function + currentImage + ' ' + nb + ' ' + sc + ' ' +lm
     os.system(syntax)
     img = Image.open('FinalResult.jpg')
-    img.resize((500,500)).save('FinalResult2.jpg')
+    img.resize((500,500),0).save('FinalResult2.jpg')
     img = Image.open('FinalResult2.jpg')
     result = ImageTk.PhotoImage(img)
     panel.configure(image=result)
     panel.image = result
+
+def secondAlgorithm():
+    function = 'Mondrian2.py '
+    syntax = function + currentImage + ' ' + '5'
+    os.system(syntax)
+    img = Image.open('FinalResult.jpg')
+    img.resize((500,500),0).save('FinalResult2.jpg')
+    img = Image.open('FinalResult2.jpg')
+    result = ImageTk.PhotoImage(img)
+    panel.configure(image=result)
+    panel.image = result
+
+def getNumColors():
+    num = numColors.get()
+    return num
 
 def close_window(): 
     fenetre.destroy()
@@ -155,6 +171,8 @@ space = Label(region1,text="    ").pack(side=LEFT)
 
 # Parametres
 
+space = Label(region1_2,text="    ").pack(side=TOP)
+space = Label(region1_2,text="    ").pack(side=TOP)
 label3 = Label(region1_2,text = "Parameters Algo 1")
 label3.pack()
 
@@ -192,17 +210,35 @@ space = Label(region1_2_1,text="    ").pack(side=TOP)
 algo1Bouton = Button(region1_2_1, text="Start Algo 1", command= firstAlgorithm)
 algo1Bouton.pack(side=TOP)
 
+space = Label(region1_2_1,text="    ").pack(side=TOP)
 
+
+#parameters algo 2
 space = Label(region1_2_2,text="    ").pack(side=TOP)
 
+##space = Label(region1_2_2,text="    ").pack(side=TOP)
+##txtscale = Label(region1_2_2,text="Number of colors").pack(side=TOP)
+##var = StringVar(fenetre)
+##var.set("5")
+##numColors = Spinbox(region1_2_2, from_= 5, to = 50, increment = 5, textvariable = var)
+##numColors.pack(side = TOP)
+
+space = Label(region1_2_2,text="    ").pack(side=TOP)
+algo1Bouton = Button(region1_2_2, text="Start Algo 2", command= secondAlgorithm)
+algo1Bouton.pack(side=TOP)
+
+space = Label(region1_2_2,text="    ").pack(side=TOP)
+space = Label(region1_2_2,text="    ").pack(side=TOP)
+algo1Bouton = Button(region1_2_2, text="Start Algo 3", command= secondAlgorithm)
+algo1Bouton.pack(side=TOP)
 
 # Algorithmes
 
 region2 = Frame(leftFrame)
 region2.pack(side=BOTTOM,fill="both",expand=True)
 
-label3 = Label(region2,text = "Parameters Algo 2")
-label3.pack()
+##label3 = Label(region2,text = "Parameters Algo 2")
+##label3.pack()
 
 space2 = Label(region2, text = "    ").pack(side=TOP)
 
