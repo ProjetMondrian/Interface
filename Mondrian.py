@@ -4,6 +4,7 @@ import cv2 as cv
 from matplotlib import pyplot as plt
 import random
 from operator import add
+from collections import *
 import sys
 import os
 
@@ -18,6 +19,7 @@ outputSize = (1000,1000)
 
 line_mag = sys.argv[4]
 line_mag = int(line_mag)
+option = sys.argv[5]
 
 ## We define here the number of lines that we want
 #number_of_lines = 10
@@ -85,7 +87,7 @@ def getLengthX(length,a,firstPoint):
     return length
 
 # fills the white region of a picture
-def fillBlanks(NoColorImage, ColorImage, width, height):
+def fillBlanks(NoColorImage, ColorImage, width, height,option):
     imgToFill = Image.open(NoColorImage)
     imgOrigin = Image.open(ColorImage)
     pixelsNotColored = list(imgToFill.getdata())
@@ -101,7 +103,7 @@ def fillBlanks(NoColorImage, ColorImage, width, height):
                 firstYPoint = [i,j]
                 surfaceW = getLengthX(0,b,firstXPoint)
                 surfaceH = getLengthY(0,b,firstYPoint)
-                b = fillColor(a,b,firstPoint,surfaceH,surfaceW)            
+                b = fillColor(a,b,firstPoint,surfaceH,surfaceW,option)            
     c = [0] * (width*height)
     index = 0 
     for i in range (0,height):
@@ -111,25 +113,40 @@ def fillBlanks(NoColorImage, ColorImage, width, height):
     return c
 
 # fills color into a specific region
-def fillColor(a,b,firstPoint,h,w):
-    R = 0
-    G = 0
-    B = 0
-    for i in range (firstPoint[0],h + firstPoint[0]):
-        for j in range (firstPoint[1],w + firstPoint[1]):
-            listToAdd = a[i][j]
-            R = R + listToAdd[0]
-            G = G + listToAdd[1]
-            B = B + listToAdd[2]
-    RGB = [R,G,B]
-    RGB = np.array(RGB)
-    newColor = RGB/(h*w)
-    newColor = (newColor[0],newColor[1],newColor[2])
+def fillColor(a,b,firstPoint,h,w,option):
+    if option == "mean":
+        R = 0
+        G = 0
+        B = 0
+        for i in range (firstPoint[0],h + firstPoint[0]):
+            for j in range (firstPoint[1],w + firstPoint[1]):
+                listToAdd = a[i][j]
+                R = R + listToAdd[0]
+                G = G + listToAdd[1]
+                B = B + listToAdd[2]
+        RGB = [R,G,B]
+        RGB = np.array(RGB)
+        newColor = RGB/(h*w)
+        newColor = (newColor[0],newColor[1],newColor[2])
 
-    for i in range (firstPoint[0],h + firstPoint[0]):
-        for j in range (firstPoint[1],w + firstPoint[1]):
-            b[i][j] = newColor
-    return b
+        for i in range (firstPoint[0],h + firstPoint[0]):
+            for j in range (firstPoint[1],w + firstPoint[1]):
+                b[i][j] = newColor
+        return b
+    else :
+        colorList = []
+        for i in range (firstPoint[0],h + firstPoint[0]):
+            for j in range (firstPoint[1],w + firstPoint[1]):
+                colorList.append(a[i][j])
+        colorToKeep = []     
+        newColor = Counter(colorList)
+        newColor = newColor.items()
+        newColor = newColor[0][0]
+        
+        for i in range (firstPoint[0],h + firstPoint[0]):
+            for j in range (firstPoint[1],w + firstPoint[1]):
+                b[i][j] = newColor
+        return b
 
 
 
@@ -413,7 +430,7 @@ cv.imwrite("blank.jpg",imgblank)
 ##cv.imread("superposition.jpg")       
 ##cv.imwrite("superposition.jpg",img)
 
-resultatList = fillBlanks("blank.jpg", "LessPixelsImageWithoutBlack.jpg", width, height)
+resultatList = fillBlanks("blank.jpg", "LessPixelsImageWithoutBlack.jpg", width, height,option)
 img = Image.open("TemporaryResult.jpg")
 img.putdata(resultatList)
 img = img.resize(outputSize, 0)

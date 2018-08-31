@@ -32,13 +32,18 @@ def getScale():
 def getLinemag():
     lm = linemag.get()
     return lm
+
+def getOption():
+    op = option.get(option.curselection())
+    return op
     
 def firstAlgorithm():
     nb = getLineNumber()
     sc = getScale()
     lm = getLinemag()
+    op = getOption()
     function = 'Mondrian.py '
-    syntax = function + currentImage + ' ' + nb + ' ' + sc + ' ' +lm
+    syntax = function + currentImage + ' ' + nb + ' ' + sc + ' ' +lm + ' ' +op
     os.system(syntax)
     img = Image.open('FinalResult.jpg')
     img.resize((500,500),0).save('FinalResult2.jpg')
@@ -204,6 +209,15 @@ var = StringVar(fenetre)
 var.set("20")
 scale = Spinbox(region1_2_1, from_= 10, to = 30, increment = 5, textvariable = var)
 scale.pack(side = TOP)
+
+space = Label(region1_2_1,text="    ").pack(side=TOP)
+
+space = Label(region1_2_1,text="Coloration").pack(side=TOP)
+
+option = Listbox(region1_2_1, selectmode = BROWSE, height = 2)
+option.insert(1, "mean")
+option.insert(2, "numerous")
+option.pack(side=TOP)
 
 space = Label(region1_2_1,text="    ").pack(side=TOP)
 
