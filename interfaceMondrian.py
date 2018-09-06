@@ -9,6 +9,7 @@ import tkFileDialog
 import imghdr
 
 # 100 8 10
+
 currentImage = 'firstPicture.jpg'
 
 def putImage(imageName):
@@ -53,8 +54,10 @@ def firstAlgorithm():
     panel.image = result
 
 def secondAlgorithm():
-    function = 'Mondrian2.py '
-    syntax = function + currentImage + ' ' + '5'
+    function = 'Mondrian3.py '
+    num = getNumColors()
+    mc = getMColorState()
+    syntax = function + currentImage + ' ' + num + ' ' + mc
     os.system(syntax)
     img = Image.open('FinalResult.jpg')
     img.resize((500,500),0).save('FinalResult2.jpg')
@@ -67,6 +70,13 @@ def getNumColors():
     num = numColors.get()
     return num
 
+def getMColorState():
+    mc = varMC.get()
+    if mc == 0:
+        return 'False'
+    else:
+        return 'True'
+    
 def close_window(): 
     fenetre.destroy()
     os.remove("imageToPut.jpg")
@@ -84,6 +94,24 @@ def selectImage():
     global currentImage
     currentImage = path
     putImage(path)
+
+def preset1():
+    varNombreLignes.set("50")
+    nombreLignes.config(textvariable = varNombreLignes)
+    varLineMag.set("4")
+    linemag.config(textvariable = varLineMag)
+    varTxtScale.set("20")
+    txtscale.config(textvariable = varTxtScale)
+    return 0
+
+def preset2():
+    varNombreLignes.set("100")
+    nombreLignes.config(textvariable = varNombreLignes)
+    varLineMag.set("8")
+    linemag.config(textvariable = varLineMag)
+    varTxtScale.set("10")
+    txtscale.config(textvariable = varTxtScale)
+    return 0
  
 fenetre = Tk()
 label = Label(fenetre, text= "Projet Mondrian")
@@ -136,7 +164,7 @@ space = Label(region1,text="    ").pack(side=TOP)
 
 # Images
 
-label2 = Label(region1,text = "Image Selection")
+label2 = Label(region1,text = "IMAGE SELECTION", bg = 'white')
 label2.pack()
 
 space = Label(region1,text="    ").pack(side=TOP)
@@ -146,7 +174,7 @@ importImage.pack(side=TOP)
 
 space = Label(region1,text="    ").pack(side=TOP)
 
-space = Label(region1,text="    ").pack(side=LEFT)
+space = Label(region1,text="                                                      ").pack(side=LEFT)
 
 image1 = Button(region1, text = "Image 1", command= lambda name = 'firstPicture.jpg' : putImage(name))
 image1.pack(side=LEFT)
@@ -178,7 +206,7 @@ space = Label(region1,text="    ").pack(side=LEFT)
 
 space = Label(region1_2,text="    ").pack(side=TOP)
 space = Label(region1_2,text="    ").pack(side=TOP)
-label3 = Label(region1_2,text = "Parameters Algo 1")
+label3 = Label(region1_2,text = "PARAMETERS ALGO 1", bg = 'white')
 label3.pack()
 
 region1_2_1 = Frame(region1_2)
@@ -188,26 +216,36 @@ region1_2_2 = Frame(region1_2)
 region1_2_2.pack(side = BOTTOM,fill="both",expand=True)
 
 space = Label(region1_2_1,text="    ").pack(side=TOP)
+
+algo1Bouton = Button(region1_2_1, text="Preset 1", command= preset1)
+algo1Bouton.pack(side=TOP)
+
+space = Label(region1_2_1,text="    ").pack(side=TOP)
+
+algo1Bouton = Button(region1_2_1, text="Preset 2", command= preset2)
+algo1Bouton.pack(side=TOP)
+
+space = Label(region1_2_1,text="    ").pack(side=TOP)
 txtNombreLignes = Label(region1_2_1,text="Number of lines").pack(side=TOP)
 
-var = StringVar(fenetre)
-var.set("50")
-nombreLignes = Spinbox(region1_2_1, from_= 10, to = 100, increment = 10, textvariable = var)
+varNombreLignes = StringVar(fenetre)
+varNombreLignes.set("50")
+nombreLignes = Spinbox(region1_2_1, from_= 10, to = 100, increment = 10, textvariable = varNombreLignes)
 nombreLignes.pack(side = TOP)
 
 space = Label(region1_2_1,text="    ").pack(side=TOP)
 txtNombreLignes = Label(region1_2_1,text="Line magnetisme").pack(side=TOP)
 
-var = StringVar(fenetre)
-var.set("4")
-linemag = Spinbox(region1_2_1, from_= 2, to = 8, increment = 1, textvariable = var)
+varLineMag = StringVar(fenetre)
+varLineMag.set("4")
+linemag = Spinbox(region1_2_1, from_= 2, to = 8, increment = 1, textvariable = varLineMag)
 linemag.pack(side = TOP)
 
 space = Label(region1_2_1,text="    ").pack(side=TOP)
 txtscale = Label(region1_2_1,text="Scale").pack(side=TOP)
-var = StringVar(fenetre)
-var.set("20")
-scale = Spinbox(region1_2_1, from_= 10, to = 30, increment = 5, textvariable = var)
+varTxtScale = StringVar(fenetre)
+varTxtScale.set("20")
+scale = Spinbox(region1_2_1, from_= 10, to = 30, increment = 5, textvariable = varTxtScale)
 scale.pack(side = TOP)
 
 space = Label(region1_2_1,text="    ").pack(side=TOP)
@@ -218,6 +256,7 @@ option = Listbox(region1_2_1, selectmode = BROWSE, height = 2)
 option.insert(1, "mean")
 option.insert(2, "numerous")
 option.pack(side=TOP)
+option.selection_set(first = 0)
 
 space = Label(region1_2_1,text="    ").pack(side=TOP)
 
@@ -230,12 +269,20 @@ space = Label(region1_2_1,text="    ").pack(side=TOP)
 #parameters algo 2
 space = Label(region1_2_2,text="    ").pack(side=TOP)
 
-##space = Label(region1_2_2,text="    ").pack(side=TOP)
-##txtscale = Label(region1_2_2,text="Number of colors").pack(side=TOP)
-##var = StringVar(fenetre)
-##var.set("5")
-##numColors = Spinbox(region1_2_2, from_= 5, to = 50, increment = 5, textvariable = var)
-##numColors.pack(side = TOP)
+parameters2 = Label(region1_2_2,text="PARAMETERS ALGO 2", bg = 'white').pack(side=TOP)
+
+space = Label(region1_2_2,text="    ").pack(side=TOP)
+txtscale = Label(region1_2_2,text="Number of colors").pack(side=TOP)
+varNumColors = StringVar(fenetre)
+varNumColors.set("5")
+numColors = Spinbox(region1_2_2, from_= 5, to = 20, increment = 5, textvariable = varNumColors)
+numColors.pack(side = TOP)
+
+space = Label(region1_2_2,text="    ").pack(side=TOP)
+
+varMC = IntVar()
+mColor = Checkbutton(region1_2_2, text="Mondrian colors only", variable = varMC)
+mColor.pack(side = TOP)
 
 space = Label(region1_2_2,text="    ").pack(side=TOP)
 algo1Bouton = Button(region1_2_2, text="Start Algo 2", command= secondAlgorithm)
@@ -246,6 +293,8 @@ space = Label(region1_2_2,text="    ").pack(side=TOP)
 algo1Bouton = Button(region1_2_2, text="Start Algo 3", command= secondAlgorithm)
 algo1Bouton.pack(side=TOP)
 
+
+
 # Algorithmes
 
 region2 = Frame(leftFrame)
@@ -255,13 +304,11 @@ region2.pack(side=BOTTOM,fill="both",expand=True)
 ##label3.pack()
 
 space2 = Label(region2, text = "    ").pack(side=TOP)
-
-
-space2 = Label(region2, text = "    ").pack(side=BOTTOM)
-space2 = Label(region2, text = "    ").pack(side=BOTTOM)
 space2 = Label(region2, text = "    ").pack(side=BOTTOM)
 
 quitButton = Button(region2, text="Quit", command = close_window).pack(side=BOTTOM)
 
-
+fenetre.overrideredirect(True)
+fenetre.overrideredirect(False)
+fenetre.attributes('-fullscreen',True)
 fenetre.mainloop()
