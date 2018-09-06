@@ -54,7 +54,7 @@ def firstAlgorithm():
     panel.image = result
 
 def secondAlgorithm():
-    function = 'Mondrian3.py '
+    function = 'Mondrian2.py '
     num = getNumColors()
     mc = getMColorState()
     syntax = function + currentImage + ' ' + num + ' ' + mc
