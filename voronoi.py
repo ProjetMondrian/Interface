@@ -1,82 +1,103 @@
 import numpy as np
+from PIL import Image
+from scipy.spatial import Voronoi
+from finite_voronoi import voronoi_finite_polygons_2d
+from landmarks import land2coords, facial_landmarks
+import os
+import sys
+from skimage import io, color
+from skimage.draw import polygon, polygon_perimeter
+from random import randint
+from sklearn.cluster import KMeans
+import dlib
+import random
+from datetime import datetime
+from skimage.exposure import equalize_adapthist
+from collections import Counter
+from skimage.color import rgb2lab,lab2rgb
+from skimage.segmentation import mark_boundaries, slic
 
 
-def voronoi_finite_polygons_2d(vor, radius=None):
-    """
-    Reconstruct infinite voronoi regions in a 2D diagram to finite
-    regions.
-    Parameters
-    ----------
-    vor : Voronoi
-        Input diagram
-    radius : float, optional
-        Distance to 'points at infinity'.
-    Returns
-    -------
-    regions : list of tuples
-        Indices of vertices in each revised Voronoi regions.
-    vertices : list of tuples
-        Coordinates for revised Voronoi vertices. Same as coordinates
-        of input vertices, with 'points at infinity' appended to the
-        end.
-    """
 
-    if vor.points.shape[1] != 2:
-        raise ValueError("Requires 2D input")
 
-    new_regions = []
-    new_vertices = vor.vertices.tolist()
+# Import image
+load_path = sys.argv[1]
+facial_detection = sys.argv[2]
+if len(sys.argv) > 3:
+    npoints = int(sys.argv[3])
 
-    center = vor.points.mean(axis=0)
-    if radius is None:
-        radius = vor.points.ptp().max()*2
+save_path = "FinalResult.jpg"
+img = Image.open(load_path)
+width, height = img.size
+img.resize((width/10,height/10), 0).save('lessPixels.jpg')
 
-    # Construct a map containing all ridges for a given point
-    all_ridges = {}
-    for (p1, p2), (v1, v2) in zip(vor.ridge_points, vor.ridge_vertices):
-        all_ridges.setdefault(p1, []).append((p2, v1, v2))
-        all_ridges.setdefault(p2, []).append((p1, v1, v2))
 
-    # Reconstruct infinite regions
-    for p1, region in enumerate(vor.point_region):
-        vertices = vor.regions[region]
 
-        if all(v >= 0 for v in vertices):
-            # finite region
-            new_regions.append(vertices)
-            continue
+if facial_detection == 'False' :
+    img = io.imread('lessPixels.jpg')
+    x = np.random.randint(img.shape[0], size=npoints)
+    y = np.random.randint(img.shape[1], size=npoints)
+    points = np.zeros((npoints,2), dtype=int)
+    points[:,0] = x
+    points[:,1] = y
 
-        # reconstruct a non-finite region
-        ridges = all_ridges[p1]
-        new_region = [v for v in vertices if v >= 0]
+else :
+    # Retrieve facial landmarks
+    img = io.imread(load_path)
+    points = facial_landmarks(img)
+    minx = np.amin(points[:,0])
+    miny = np.amin(points[:,1])
+    maxx = np.amax(points[:,0])
+    maxy = np.amax(points[:,1])
+    img = img[minx:maxx,miny:maxy]
 
-        for p2, v1, v2 in ridges:
-            if v2 < 0:
-                v1, v2 = v2, v1
-            if v1 >= 0:
-                # finite ridge: already in the region
-                continue
+    # rescale points coordinates
+    n = points.shape[0]
+    for i in range(0,n):
+        points[i,0] = points[i,0] - minx
+        points[i,1] = points[i,1] - miny
 
-            # Compute the missing endpoint of an infinite ridge
+# Compute Voronoi partition
+vor = Voronoi(points,incremental = 1)
+vertices = vor.vertices
+regions = vor.regions
 
-            t = vor.points[p2] - vor.points[p1] # tangent
-            t /= np.linalg.norm(t)
-            n = np.array([-t[1], t[0]])  # normal
 
-            midpoint = vor.points[[p1, p2]].mean(axis=0)
-            direction = np.sign(np.dot(midpoint - center, n)) * n
-            far_point = vor.vertices[v2] + direction * radius
+# compute finite voronoi
+regions, vertices = voronoi_finite_polygons_2d(vor)
 
-            new_region.append(len(new_vertices))
-            new_vertices.append(far_point.tolist())
+# Colorize the picture
+img = rgb2lab(img) # to lab colorspace
 
-        # sort region counterclockwise
-        vs = np.asarray([new_vertices[v] for v in new_region])
-        c = vs.mean(axis=0)
-        angles = np.arctan2(vs[:,1] - c[1], vs[:,0] - c[0])
-        new_region = np.array(new_region)[np.argsort(angles)]
+for region in regions:
 
-        # finish
-        new_regions.append(new_region.tolist())
+    # find points inside each region
+    poly = vertices[region]
+    rr, cc = polygon(poly[:, 0], poly[:, 1], img.shape)
 
-    return new_regions, np.asarray(new_vertices)
+    # find dominant color using k means clustering
+    colors = img[rr, cc]
+    kmeans = KMeans(n_clusters=3, random_state=0)
+    labels = kmeans.fit_predict(colors)
+    #count labels to find most popular
+    label_counts = Counter(labels)
+    #subset out most popular centroid
+    dominant_color = kmeans.cluster_centers_[label_counts.most_common(1)[0][0]]
+    x = dominant_color[0]
+    y = dominant_color[1]
+    z = dominant_color[2]
+
+    # colorize the inside
+    img[rr, cc] = (x, y, z)
+
+    # colorize the perimeter
+    rr, cc = polygon_perimeter(poly[:, 0], poly[:, 1], img.shape)
+    img[rr, cc] = (0, 0, 0)
+
+# Back to rgb and save
+img = lab2rgb(img)
+io.imsave(save_path,img)
+img = Image.open(save_path)
+img = img.resize((1000,1000), 0)
+img.save('FinalResult.jpg')
+os.remove('lessPixels.jpg')

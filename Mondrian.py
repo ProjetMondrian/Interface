@@ -33,8 +33,7 @@ number_of_lines = int(number_of_lines)
 all the values above must be between 1 and 100, the bigger the value, the more pixelated it will be
 resize = final size of picture
 scale = the scale of the mondrian painting
-cleanvalue = scale to cleanup ... doesnt really work
-marge = how to compare colors for the cleanup, the bigger the better
+linemag = the magnetism of the drawn line
 
 '''
 
